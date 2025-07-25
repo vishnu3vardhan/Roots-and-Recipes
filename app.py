@@ -1,7 +1,7 @@
 import streamlit as st
-from streamlit.utils import init_storage, load_data
-from streamlit.forms import recipe_form
-from streamlit.display import display_stats, show_recipes
+from app_modules.utils import init_storage, load_data
+from app_modules.forms import recipe_form
+from app_modules.display import display_stats, show_recipes
 
 # Page configuration
 st.set_page_config(page_title="Roots & Recipes", page_icon="🍲", layout="centered")

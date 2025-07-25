@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit.utils import is_duplicate, add_entry, get_timestamp
+from app_modules.utils import is_duplicate, add_entry, get_timestamp
 
 def recipe_form(df):
     with st.expander("📝 Submit a New Recipe", expanded=True):
