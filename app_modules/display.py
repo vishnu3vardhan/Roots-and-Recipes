@@ -1,53 +1,85 @@
 import streamlit as st
+from PIL import Image
+import os
+from app_modules.utils import get_comments, get_recipe_of_the_day
 
 def display_stats(df):
-    st.subheader("📊 Community Stats")
-    st.markdown(f"- **Total Recipes:** {len(df)}")
-    st.markdown(f"- **Languages Represented:** {df['Language'].nunique()}")
-    st.markdown(f"- **Contributors:** {df['Name'].nunique() if 'Name' in df else 'N/A'}")
+    st.subheader("Regional Telangana Recipes")
+
+    total = len(df)
+    languages = df["language"].nunique() if "language" in df.columns else 0
+    contributors = df["name"].nunique() if "name" in df.columns else 0
+
+    st.markdown(f"- **Total Recipes:** {total}")
+    st.markdown(f"- **Languages Represented:** {languages}")
+    st.markdown(f"- **Contributors:** {contributors}")
     st.markdown("----")
 
 def show_recipes(df):
-    st.header("📚 Explore Community Recipes")
+    st.header("🍽️ Explore Regional Recipes")
+
+    # Show Recipe of the Day above recipes list
+    recipe_of_the_day = get_recipe_of_the_day()
+    if recipe_of_the_day:
+        st.subheader("Recipe of the Day")
+        st.markdown(f"**Dish Name:** {recipe_of_the_day['dish_name']}")
+        st.markdown(f"**Taste Description:** {recipe_of_the_day['taste_description']}")
+        st.markdown("---")
 
     if not df.empty:
         col1, col2 = st.columns(2)
         with col1:
-            search_query = st.text_input("🔍 Search recipes by dish name, language, or ingredient").strip().lower()
+            search_query = st.text_input("🔍 Search recipes by dish name or ingredient").strip().lower()
         with col2:
-            sort_option = st.selectbox("📁 Sort recipes by", ["Most Recent", "Alphabetical"])
-
-        languages = sorted(df["Language"].dropna().unique())
-        lang_filter = st.selectbox("🌐 Filter by Language", ["All"] + languages)
+            sort_option = st.selectbox("Sort recipes by", ["Most Recent", "Alphabetical"])
 
         df_filtered = df.copy()
 
         if search_query:
             df_filtered = df_filtered[df_filtered.apply(
-                lambda row: search_query in str(row["Dish Name"]).lower()
-                            or search_query in str(row["Language"]).lower()
-                            or search_query in str(row["Ingredients"]).lower(),
+                lambda row: search_query in str(row.get("dish_name", "")).lower()
+                            or search_query in str(row.get("ingredients", "")).lower(),
                 axis=1
             )]
 
-        if lang_filter != "All":
-            df_filtered = df_filtered[df_filtered["Language"] == lang_filter]
-
         if sort_option == "Most Recent":
-            df_filtered = df_filtered.sort_values(by="Timestamp", ascending=False)
+            df_filtered = df_filtered.sort_values(by="timestamp", ascending=False)
         else:
-            df_filtered = df_filtered.sort_values(by="Dish Name")
+            df_filtered = df_filtered.sort_values(by="dish_name")
 
         if not df_filtered.empty:
+            from app_modules.forms import comment_form  # import here to avoid circular imports
+
             for _, row in df_filtered.iterrows():
-                with st.expander(f"🍽️ {row['Dish Name']} ({row['Language']})", expanded=False):
-                    if row["Name"]:
-                        st.markdown(f"**👤 Submitted by:** {row['Name']}")
-                    st.markdown(f"**📂 Category:** {row['Category']}")
-                    st.markdown(f"**🧂 Ingredients:**\n{row['Ingredients']}")
-                    st.markdown(f"**👩‍🍳 Instructions:**\n{row['Instructions']}")
-                    if row["Story"]:
-                        st.markdown(f"**📖 Story:** {row['Story']}")
+                with st.expander(f"🍽️ {row['dish_name']}", expanded=False):
+                    if row.get("name"):
+                        st.markdown(f"**👤 Submitted by:** {row['name']}")
+                    st.markdown(f"**📂 Category:** {row.get('category', '')}")
+                    st.markdown(f"**🌍 Country:** {row.get('country', '')}")
+                    st.markdown(f"**🧂 Ingredients:**\n{row.get('ingredients', '')}")
+                    st.markdown(f"**👩‍🍳 Instructions:**\n{row.get('instructions', '')}")
+                    if row.get("story"):
+                        st.markdown(f"**📖 Story:** {row['story']}")
+
+                    # Display image if exists
+                    img_path = row.get("image_path")
+                    if img_path and os.path.exists(img_path):
+                        image = Image.open(img_path)
+                        st.image(image, caption=f"{row['dish_name']} image", use_container_width=True)
+
+                    # Show comments
+                    comments = get_comments(row["id"])
+                    st.markdown("### 💬 Comments")
+                    if comments:
+                        for commenter_name, comment_text, timestamp in comments:
+                            ts_display = timestamp.split("T")[0] if timestamp else ""
+                            st.markdown(f"- **{commenter_name}** ({ts_display}): {comment_text}")
+                    else:
+                        st.info("No comments yet. Be the first to comment!")
+
+                    # Show comment form
+                    comment_form(row["id"])
+
         else:
             st.warning("No recipes matched your search or filters.")
     else:
