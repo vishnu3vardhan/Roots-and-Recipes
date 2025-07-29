@@ -55,16 +55,16 @@ def recipe_form(df):
                         image_path = save_image(image_file, dish) if image_file else None
 
                         entry = {
-                            "Name": name,
-                            "Language": language,
-                            "Dish Name": dish,
-                            "Category": category,
-                            "Country": country,
-                            "Ingredients": ingredients,
-                            "Instructions": instructions,
-                            "Story": story,
-                            "Image Path": image_path,
-                            "Timestamp": get_timestamp()
+                            "name": name,
+                            "language": language,
+                            "dish_name": dish,
+                            "category": category,
+                            "country": country,
+                            "ingredients": ingredients,
+                            "instructions": instructions,
+                            "story": story,
+                            "image_path": image_path,
+                            "timestamp": get_timestamp()
                         }
 
                         df = add_entry(df, entry)

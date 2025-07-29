@@ -76,22 +76,22 @@ def add_entry(df, entry):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
 
-    lat, lon = get_coordinates(entry.get("Country", ""))
+    lat, lon = get_coordinates(entry.get("country", ""))
     c.execute("""
         INSERT INTO recipes (name, language, dish_name, category, country,
             ingredients, instructions, story, image_path, timestamp, latitude, longitude)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        entry.get("Name"),
-        entry.get("Language"),
-        entry.get("Dish Name"),
-        entry.get("Category"),
-        entry.get("Country"),
-        entry.get("Ingredients"),
-        entry.get("Instructions"),
-        entry.get("Story"),
-        entry.get("Image Path"),
-        entry.get("Timestamp"),
+        entry.get("name"),
+        entry.get("language"),
+        entry.get("dish_name"),
+        entry.get("category"),
+        entry.get("country"),
+        entry.get("ingredients"),
+        entry.get("instructions"),
+        entry.get("story"),
+        entry.get("image_path"),
+        entry.get("timestamp"),
         lat,
         lon
     ))

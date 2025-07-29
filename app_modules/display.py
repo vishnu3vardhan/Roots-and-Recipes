@@ -1,7 +1,7 @@
 import streamlit as st
-from PIL import Image
 import os
 from app_modules.utils import get_comments, get_recipe_of_the_day
+
 
 def display_stats(df):
     st.subheader("Regional Telangana Recipes")
@@ -14,6 +14,7 @@ def display_stats(df):
     st.markdown(f"- **Languages Represented:** {languages}")
     st.markdown(f"- **Contributors:** {contributors}")
     st.markdown("----")
+
 
 def show_recipes(df):
     st.header("🍽️ Explore Regional Recipes")
@@ -61,11 +62,13 @@ def show_recipes(df):
                     if row.get("story"):
                         st.markdown(f"**📖 Story:** {row['story']}")
 
-                    # Display image if exists
+                    # Display image if it exists and is valid
                     img_path = row.get("image_path")
                     if img_path and os.path.exists(img_path):
-                        image = Image.open(img_path)
-                        st.image(image, caption=f"{row['dish_name']} image", use_container_width=True)
+                        try:
+                            st.image(img_path, caption=f"{row['dish_name']} image")
+                        except Exception as e:
+                            st.warning(f"⚠️ Couldn't display image: {e}")
 
                     # Show comments
                     comments = get_comments(row["id"])
