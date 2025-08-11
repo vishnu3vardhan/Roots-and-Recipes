@@ -1,21 +1,33 @@
-MIT License
+GNU AFFERO GENERAL PUBLIC LICENSE
+                       Version 3, 19 November 2007
 
-Copyright (c) 2025 Vishnu
+Copyright (C) 2025 C V VISHNU VARDHAN CHARY
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the “Software”), to deal
-in the Software without restriction, including without limitation the rights  
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell  
-copies of the Software, and to permit persons to whom the Software is  
-furnished to do so, subject to the following conditions:
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
 
-The above copyright notice and this permission notice shall be included in all  
-copies or substantial portions of the Software.
+                            Preamble
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,  
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE  
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER  
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
-SOFTWARE.
+The GNU Affero General Public License is a free, copyleft license for
+software and other kinds of works, specifically designed to ensure
+cooperation with the community in the case of network server software.
+
+The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works. By contrast,
+our General Public Licenses are intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users.
+
+This license, the Affero General Public License, applies to any program or
+other work that contains a notice placed by the copyright holder saying
+it may be distributed under the terms of this Affero GPL. Such a notice
+grants a world-wide, royalty-free license, unlimited in duration, to use,
+study, share and modify the work under the conditions stated herein. The
+precise terms and conditions for copying, distribution and modification follow.
+
+[... full license text continues here ...]
+
+You can get the full text of the AGPLv3 from the official GNU site:
+
+🔗 https://www.gnu.org/licenses/agpl-3.0.txt
+
