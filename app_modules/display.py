@@ -1,11 +1,10 @@
 import streamlit as st
 import os
+import pandas as pd
 from app_modules.utils import get_comments, get_recipe_of_the_day
-
 
 def display_stats(df):
     st.subheader("Regional Telangana Recipes")
-
     total = len(df)
     languages = df["language"].nunique() if "language" in df.columns else 0
     contributors = df["name"].nunique() if "name" in df.columns else 0
@@ -14,7 +13,6 @@ def display_stats(df):
     st.markdown(f"- **Languages Represented:** {languages}")
     st.markdown(f"- **Contributors:** {contributors}")
     st.markdown("----")
-
 
 def show_recipes(df):
     st.header("🍽️ Explore Regional Recipes")
@@ -39,7 +37,7 @@ def show_recipes(df):
         if search_query:
             df_filtered = df_filtered[df_filtered.apply(
                 lambda row: search_query in str(row.get("dish_name", "")).lower()
-                            or search_query in str(row.get("ingredients", "")).lower(),
+                        or search_query in str(row.get("ingredients", "")).lower(),
                 axis=1
             )]
 
@@ -49,7 +47,7 @@ def show_recipes(df):
             df_filtered = df_filtered.sort_values(by="dish_name")
 
         if not df_filtered.empty:
-            from app_modules.forms import comment_form  # import here to avoid circular imports
+            from app_modules.forms import comment_form  # avoid circular import
 
             for _, row in df_filtered.iterrows():
                 with st.expander(f"🍽️ {row['dish_name']}", expanded=False):
@@ -62,7 +60,7 @@ def show_recipes(df):
                     if row.get("story"):
                         st.markdown(f"**📖 Story:** {row['story']}")
 
-                    # Display image if it exists and is valid
+                    # Display image if it exists
                     img_path = row.get("image_path")
                     if img_path and os.path.exists(img_path):
                         try:
@@ -73,16 +71,24 @@ def show_recipes(df):
                     # Show comments
                     comments = get_comments(row["id"])
                     st.markdown("### 💬 Comments")
+
                     if comments:
-                        for commenter_name, comment_text, timestamp in comments:
+                        # Optional: average rating display
+                        ratings_only = [r for _, _, r, _ in comments if not pd.isna(r)]
+                        if ratings_only:
+                            avg_rating = sum(ratings_only) / len(ratings_only)
+                            stars_avg = "⭐" * int(round(avg_rating))
+                            st.markdown(f"**Average Rating:** {avg_rating:.1f} {stars_avg}")
+
+                        for commenter_name, comment_text, rating, timestamp in comments:
                             ts_display = timestamp.split("T")[0] if timestamp else ""
-                            st.markdown(f"- **{commenter_name}** ({ts_display}): {comment_text}")
+                            stars = "⭐" * int(rating) if not pd.isna(rating) else ""
+                            st.markdown(f"- **{commenter_name}** ({ts_display}) {stars}: {comment_text}")
                     else:
                         st.info("No comments yet. Be the first to comment!")
 
-                    # Show comment form
+                    # Show comment form below comments
                     comment_form(row["id"])
-
         else:
             st.warning("No recipes matched your search or filters.")
     else:

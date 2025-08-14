@@ -13,6 +13,7 @@ def init_storage():
 
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
+
     # Recipes table
     c.execute("""
         CREATE TABLE IF NOT EXISTS recipes (
@@ -31,7 +32,8 @@ def init_storage():
             longitude REAL
         )
     """)
-    # Comments table
+
+    # Comments table with rating column for new installs
     c.execute("""
         CREATE TABLE IF NOT EXISTS comments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,9 +41,18 @@ def init_storage():
             commenter_name TEXT,
             comment_text TEXT,
             timestamp TEXT,
+            rating INTEGER,
             FOREIGN KEY(recipe_id) REFERENCES recipes(id)
         )
     """)
+
+    # Auto-upgrade check for rating column
+    c.execute("PRAGMA table_info(comments)")
+    cols = [col[1] for col in c.fetchall()]
+    if "rating" not in cols:
+        c.execute("ALTER TABLE comments ADD COLUMN rating INTEGER")
+        print("🔄 Added missing 'rating' column in comments table")
+
     # Recipe of the Day table
     c.execute("""
         CREATE TABLE IF NOT EXISTS recipe_of_the_day (
@@ -52,6 +63,7 @@ def init_storage():
             FOREIGN KEY(recipe_id) REFERENCES recipes(id)
         )
     """)
+
     conn.commit()
     conn.close()
 
@@ -62,7 +74,7 @@ def load_data():
     return df
 
 def save_data(df):
-    pass  # No direct save needed
+    pass  # no need to save DataFrame directly (DB holds data)
 
 def is_duplicate(df, name, dish):
     if not name or not dish:
@@ -75,7 +87,6 @@ def is_duplicate(df, name, dish):
 def add_entry(df, entry):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-
     lat, lon = get_coordinates(entry.get("country", ""))
     c.execute("""
         INSERT INTO recipes (name, language, dish_name, category, country,
@@ -95,10 +106,8 @@ def add_entry(df, entry):
         lat,
         lon
     ))
-
     conn.commit()
     conn.close()
-
     return load_data()
 
 def get_timestamp():
@@ -127,16 +136,15 @@ def save_image(image_file, dish_name):
         f.write(image_file.getbuffer())
     return filepath
 
-# Comment functions
-
-def add_comment(recipe_id, commenter_name, comment_text):
+# Comments with rating
+def add_comment(recipe_id, commenter_name, comment_text, rating=None):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     timestamp = get_timestamp()
     c.execute("""
-        INSERT INTO comments (recipe_id, commenter_name, comment_text, timestamp)
-        VALUES (?, ?, ?, ?)
-    """, (recipe_id, commenter_name, comment_text, timestamp))
+        INSERT INTO comments (recipe_id, commenter_name, comment_text, rating, timestamp)
+        VALUES (?, ?, ?, ?, ?)
+    """, (recipe_id, commenter_name, comment_text, rating, timestamp))
     conn.commit()
     conn.close()
 
@@ -144,7 +152,8 @@ def get_comments(recipe_id):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute("""
-        SELECT commenter_name, comment_text, timestamp FROM comments
+        SELECT commenter_name, comment_text, rating, timestamp
+        FROM comments
         WHERE recipe_id = ?
         ORDER BY timestamp DESC
     """, (recipe_id,))
@@ -152,13 +161,27 @@ def get_comments(recipe_id):
     conn.close()
     return rows
 
-# Recipe of the Day functions
+# Top rated recipe
+def get_top_rated_recipe():
+    conn = sqlite3.connect(DB_FILE)
+    query = """
+        SELECT r.*, AVG(c.rating) as avg_rating
+        FROM recipes r
+        JOIN comments c ON r.id = c.recipe_id
+        WHERE c.rating IS NOT NULL
+        GROUP BY r.id
+        ORDER BY avg_rating DESC
+        LIMIT 1
+    """
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df.iloc[0] if not df.empty else None
 
+# Recipe of the Day
 def set_recipe_of_the_day(recipe_id, taste_description):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     today = datetime.datetime.now().date().isoformat()
-
     c.execute("""
         INSERT INTO recipe_of_the_day (id, recipe_id, taste_description, date)
         VALUES (1, ?, ?, ?)
@@ -167,7 +190,6 @@ def set_recipe_of_the_day(recipe_id, taste_description):
             taste_description=excluded.taste_description,
             date=excluded.date
     """, (recipe_id, taste_description, today))
-
     conn.commit()
     conn.close()
 
@@ -175,23 +197,19 @@ def get_recipe_of_the_day():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     today = datetime.datetime.now().date().isoformat()
-
     c.execute("""
         SELECT r.id, r.dish_name, r.language, r.category, r.country, r.ingredients,
-               r.instructions, r.story, r.image_path, r.timestamp,
-               rod.taste_description
+            r.instructions, r.story, r.image_path, r.timestamp,
+            rod.taste_description
         FROM recipe_of_the_day rod
         JOIN recipes r ON rod.recipe_id = r.id
         WHERE rod.date = ?
         LIMIT 1
     """, (today,))
-
     row = c.fetchone()
     conn.close()
-
     if row:
         keys = ["id", "dish_name", "language", "category", "country", "ingredients",
                 "instructions", "story", "image_path", "timestamp", "taste_description"]
         return dict(zip(keys, row))
-    else:
-        return None
+    return None

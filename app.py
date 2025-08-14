@@ -6,13 +6,19 @@ from app_modules.utils import (
 from app_modules.forms import recipe_form
 from app_modules.display import display_stats, show_recipes
 import pandas as pd
-
+import random
+import time
 # Page configuration
 st.set_page_config(page_title="Roots & Recipes", page_icon="🍲", layout="centered")
 
 # Initialize storage and load data
 init_storage()
 df = load_data()
+
+if 'rating_sum' not in df.columns:
+    df['rating_sum'] = 0
+if 'rating_count' not in df.columns:
+    df['rating_count'] = 0
 
 # App title and intro
 st.title("🍲 Roots & Recipes")
@@ -75,7 +81,6 @@ else:
 
 # Search and filter + Show recipes with comments
 show_recipes(df)
-
-# Footer
-st.markdown("----")
+st.markdown("---")
 st.caption("Made with ❤️ using Streamlit")
+
