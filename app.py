@@ -29,10 +29,22 @@ st.markdown("----")
 # Show Recipe of the Day if available
 recipe_of_the_day = get_recipe_of_the_day()
 if recipe_of_the_day:
-    st.subheader("🌟 Recipe of the Day 🌟")
-    st.markdown(f"**Dish Name:** {recipe_of_the_day['dish_name']}")
-    st.markdown(f"**Taste Description:** {recipe_of_the_day['taste_description']}")
-    st.markdown("---")
+    st.markdown("""
+        <div style="
+            background-color: #f9f9f9;
+            border-left: 6px solid #FFA500;
+            padding: 1.2em;
+            border-radius: 8px;
+            margin-bottom: 1.5em;
+        ">
+            <h3 style="margin-top: 0">🌟 Recipe of the Day 🌟</h3>
+            <p><strong>Dish Name:</strong> {dish_name}</p>
+            <p><strong>Taste Description:</strong> {taste}</p>
+        </div>
+    """.format(
+        dish_name=recipe_of_the_day['dish_name'],
+        taste=recipe_of_the_day['taste_description']
+    ), unsafe_allow_html=True)
 
 # Admin section to set Recipe of the Day
 with st.expander("🔧 Admin: Set Recipe of the Day"):
