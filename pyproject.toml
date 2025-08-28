@@ -1,0 +1,28 @@
+[project]
+name = "roots-and-recipes"
+version = "0.1.0"
+description = "A Streamlit app to share traditional recipes and cultural stories."
+authors = [
+    { name = "C V VISHNU VARDHAN CHARY", email = "vishnuvardhancv128@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "streamlit>=1.30.0",
+    "pandas>=1.5.0",
+    "requests",  # likely needed for geocoding (get_coordinates)
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "pytest"
+]
+
+[tool.setuptools.packages.find]
+where = ["app_modules"]  # assuming local package inside this folder
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
